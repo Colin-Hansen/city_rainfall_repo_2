@@ -1062,25 +1062,138 @@ rm(list=ls())
           # filter for months May to September
           rain_5_min <- rain_5_min %>% filter(Month >= 5 & Month <= 9)
           
-           # filter by Year
+          # filter by Year
           rain_by_year <- rain_5_min %>% filter(Year==year_as_numeric[s])
+          
+          # print(year_as_numeric[s])
+          # 
+          # print(nrow(rain_by_year))
+          
+           
+          # temporary - save the RAINFALL FOR EACH YEAR to a csv.file - ** OPTIONAL ** 
+          # create a file name to save the file for each site (** dynamic **)
+          # CSV_file_name<-paste0(site_prefix,"_Rainfall_BY_YEAR","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
+          # CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+    
+          # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
+          # write.table(rain_by_year,CSV_outfile,sep=",",col.names=TRUE,row.names=FALSE)
           
           # convert to dataframe
           rain_by_year <- as.data.frame(rain_by_year)
           
+          
+               
+          ## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+          # following code is from Stack Overflow
+          ## >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+          
+          Rain_Over_0<- rain_by_year[rain_by_year[,"Rainfall"]!=0,]
+          
+          Rainindex<-c(0,cumsum(diff(Rain_Over_0[,"Date.Time"])>MIT_value[i])) 
+          
+          # Split into list of events
+          # this returns a list of events. You can then use sapply functions to determine the rain statistics you need. 
+          
+          RainEvents_list_1<-split(Rain_Over_0, Rainindex)
+          
+          ## Sequence along the RainEvents_list_1 list; identify the start and stop date.time for each rainfall event; 
+          # then create 'RainEvents_list_2' based on the start and stop date.time in 'RainEvents_list_1 
+          #
+          
+          # create empty list
+          
+          RainEvents_list_2<-list(NULL)
+          
+          for (j in seq_along(RainEvents_list_1)) {
+          
+          length_date_times<-length(RainEvents_list_1[[j]]$Date.Time)
+          first_dt<-RainEvents_list_1[[j]]$Date.Time[1]
+          last_dt<-RainEvents_list_1[[j]]$Date.Time[length_date_times]
+          
+          # print(class(first_dt))
+          
+          
+          # filter 'rain_by_year' from first_dt to last_dt
+           
+          temp_data<- rain_by_year %>% filter(Date.Time >= first_dt & Date.Time <= last_dt)
+          
+          # add the rainfall event .id; this is just the individual element number of the RainEvents list, but ...
+          # you have to subtract 1 so that the id's start at 0, not 1
+          
+          ID<-j-1  # notice you need to subtract 1, to force the rainfall event id's to start at zero
+         
+          # mutate to add the rainfall .id to 'temp_data'
+          temp_data<- temp_data %>% mutate(.id = ID)
+          
+          # move the .id column to the front of the dataframe
+          temp_data<- temp_data %>% select(.id,everything())
+          
+          # create a list of the rainfall events - full
+          
+          RainEvents_list_2[j]<-list(temp_data)
+         
+       
+            }     # end of 'seq_along(RainEvents_list_1)'
       
-        }     # end of 'seq_along(year_as_numeric)'
+          
+           ## determine the gap time between rainfall events - ORIGINAL APPROACH 
+          
+           # create empty df
+              
+              gap_times_df <- NULL
+                
+                 for (m in seq_along(RainEvents_list_2)) {
+                   
+                    if (m > 1) {
+                      
+                      gap_start <- max(RainEvents_list_2[[m-1]]$Date.Time)
+                      
+                      gap_end <- min(RainEvents_list_2[[m]]$Date.Time)
+                      
+                      # use difftime to force the gap time to be in hours rather than days (or hours if less than a day)
+                    
+                      gap_duration <- gap_end - gap_start
+                      
+                      gap_duration <- difftime(gap_end,gap_start, units="hours")
+                      
+                      gap_times_df <- rbind(gap_times_df,gap_duration)
+                      
+                      } # end 'if'
+                   
+                } # end 'seq_along(RainEvents_list_2'
+          
+              
+          colnames(gap_times_df) <- c("Gap.Time.hours")
+          
+          
+          # temporary - save the gap times to a csv.file; OPTIONAL - GOOD FOR TESTING
+          # create a file name to save the file for each site (** dynamic **)
+          # CSV_file_name<-paste0(site_prefix,"_Rainfall_Gap Times","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
+          # CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+    
+          # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
+          # write.table(gap_times_df,CSV_outfile,sep=",",col.names=TRUE,row.names=FALSE)
+          
+    
+          # summary statistics on the gap times
+          smry_gap_times<- hydroTSM::smry(gap_times_df)
+    
+          # create a file name to save the file for each site (** dynamic **)
+          CSV_file_name<-paste0(site_prefix,"_Stats_Rainfall_Gap Times","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
+          CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+    
+          # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
+          write.table(smry_gap_times,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
+          
+          
+    }     # end of 'seq_along(year_as_numeric)'
       
       
   }     # end of 'seq_along(MIT_value)'
 
 
 
-
 ```
-
-
-
 
 
 
