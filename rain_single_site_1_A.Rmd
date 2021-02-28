@@ -594,7 +594,7 @@ rm(list=ls())
 
 \blandscape
 
-```{r charts-part-2, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=9,fig.asp=0.618,fig.align='centre'}
+```{r charts-part-2, eval= FALSE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=9,fig.asp=0.618,fig.align='centre'}
 
 
     # create histogram of hourly rainfall data (cut off = 1 mm)
@@ -659,7 +659,7 @@ rm(list=ls())
 \blandscape
 
 
-```{r charts-part-3,eval= TRUE,echo = FALSE,message=FALSE, warning=FALSE}
+```{r charts-part-3,eval= FALSE,echo = FALSE,message=FALSE, warning=FALSE}
 
     # purpose: scatterplot of the yearly (i.e. May to Sept.) City of Calgary rain gauge rainfall versus the YYC International Airport yearly rainfall 
     
@@ -710,7 +710,7 @@ rm(list=ls())
 ```
 \elandscape
 
-```{r event-statistics-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
+```{r event-statistics-part-1, eval=FALSE, echo = FALSE,message=FALSE, warning=FALSE}
 
 
 
@@ -917,105 +917,7 @@ rm(list=ls())
        # write the results to .CSV file
        write.table(x,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
        
-       
-       
       
-      ## determine the gap time between rainfall events - ORIGINAL APPROACH 
-      
-      
-       # create empty df
-          
-          gap_times_df <- NULL
-            
-             for (m in seq_along(RainEvents_list_2)) {
-               
-                if (m > 1) {
-                  
-                  gap_start <- max(RainEvents_list_2[[m-1]]$Date.Time)
-                  
-                  gap_end <- min(RainEvents_list_2[[m]]$Date.Time)
-                  
-                  # use difftime to force the gap time to be in hours rather than days (or hours if less than a day)
-                
-                  gap_duration <- gap_end - gap_start
-                  
-                  gap_duration <- difftime(gap_end,gap_start, units="hours")
-                  
-                  gap_times_df <- rbind(gap_times_df,gap_duration)
-                  
-                  } # end 'if'
-               
-            } # end 'seq_along(RainEvents_list_2'
-      
-          
-      colnames(gap_times_df) <- c("Gap.Time.hours")
-
-      # summary statistics on the gap times
-      smry_gap_times<- hydroTSM::smry(gap_times_df)
-
-      # create a file name to save the file for each site
-      CSV_file_name<-paste0(site_prefix,"_Statistics_Rainfall_Gap Times","_MIT_",MIT_value[i],".csv")
-      CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
-
-      # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
-      write.table(smry_gap_times,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
-      
-      
-     
-       
-     
-      
-      
-      
-      # 'gap_times_function'
-      
-      
-       # create empty df
-          
-          gap_times_function <- function(RainEvents_list_2) {
-            
-            # gap_times_df <- NULL
-              
-               for (m in seq_along(RainEvents_list_2)) {
-                 
-                  if (m > 1) {
-                    
-                    gap_start <- max(RainEvents_list_2[[m-1]]$Date.Time)
-                    
-                    gap_end <- min(RainEvents_list_2[[m]]$Date.Time)
-                    
-                    # use difftime to force the gap time to be in hours rather than days (or hours if less than a day)
-                  
-                    gap_duration <- gap_end - gap_start
-                    
-                    gap_duration <- difftime(gap_end,gap_start, units="hours")
-                    
-                    gap_times_df <- rbind(gap_times_df,gap_duration)
-                    
-                    } # end 'if'
-                 
-              } # end 'seq_along(RainEvents_list_2'
-          }
-      
-      
-          
-      # colnames(gap_times_df) <- c("Gap.Time.hours")  
-      
-    
-    
-      # TESTING ZONE
-          
-           
-      ## revised approach to getting the gap times, which must be done by year
-       
-      year_as_factor <- factor(RainEvents_df_long$Year)
-      
-      # get the levels of 'year_as_factor'; convert to numeric
-      
-      year_as_factor <- as.numeric(levels(year_as_factor))
-      
-   
-     
   }     # end of 'seq_along(MIT_value)'
       
    
@@ -1024,7 +926,7 @@ rm(list=ls())
 
 
 
-```{r event-statistics-part-2, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
+```{r event-statistics-part-2, eval=FALSE, echo = FALSE,message=FALSE, warning=FALSE}
 
   ## this chunk extracts the gap times between rainfall events - by year
 
@@ -1043,12 +945,17 @@ rm(list=ls())
       year_as_numeric <- as.numeric(levels(year_as_factor))
       
       
+      # create empty list to save the gap time stats - by year; see around line 1188 that follows
+            
+      smry_gap_times_list <- list(NULL)
+      
+      
         
       # specify the MIT values; was done previously in Chunk 7
       
-      # MIT_value<-c(60,360)
+      MIT_value<-c(60,360)
       
-       MIT_value<-c(60) ## TESTING ONLY
+       # MIT_value<-c(60) ## TESTING ONLY
     
     # enter loop with the MIT value; get RainEvents that correspond to the MIT_value
     
@@ -1161,9 +1068,10 @@ rm(list=ls())
                       } # end 'if'
                    
                 } # end 'seq_along(RainEvents_list_2'
-          
-              
-          colnames(gap_times_df) <- c("Gap.Time.hours")
+         
+          # add column name
+               
+          colnames(gap_times_df) <- paste0("Gap.Time.hours","_",year_as_numeric[s])
           
           
           # temporary - save the gap times to a csv.file; OPTIONAL - GOOD FOR TESTING
@@ -1177,18 +1085,27 @@ rm(list=ls())
     
           # summary statistics on the gap times
           smry_gap_times<- hydroTSM::smry(gap_times_df)
+          
+           # build a list of the gap time results
+          
+           smry_gap_times_list[s] <- list(smry_gap_times)
+            
+      }     # end of 'seq_along(year_as_numeric)'
+      
+      
+          # use 'bind_cols' to combine the list of smry_gap_times dataframes to one dataframe
+  
+          smry_gap_times_df_bind_cols <- bind_cols(smry_gap_times_list)      
+      
     
           # create a file name to save the file for each site (** dynamic **)
-          CSV_file_name<-paste0(site_prefix,"_Stats_Rainfall_Gap Times","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
+          CSV_file_name<-paste0(site_prefix,"_Stats_Rainfall_Gap Times","_MIT_",MIT_value[i],".csv")
           CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
     
           # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
-          write.table(smry_gap_times,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
-          
-          
-    }     # end of 'seq_along(year_as_numeric)'
+          write.table(smry_gap_times_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
       
-      
+    
   }     # end of 'seq_along(MIT_value)'
 
 
