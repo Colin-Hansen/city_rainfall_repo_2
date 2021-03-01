@@ -2,16 +2,18 @@
 title: "City of Calgary Rainfall Data Analysis - Single Site Approach"
 author: "Colin Hansen, M.Eng., P. Eng."
 date: "XX-February-2021"
+
 # https://stackoverflow.com/questions/25849814/rstudio-rmarkdown-both-portrait-and-landscape-layout-in-a-single-pdf/41945462#41945462
+
 header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
 output:
-  pdf_document: default
+  word_document: default
   classoption: landscape # does not seem to work (30-JAN-2021)
   html_notebook: default
-  word_document: default
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -72,6 +74,8 @@ library(ggnewscale)
 library(kableExtra)
 library(hydroTSM)
 library(cowplot)
+library(flextable)
+library(officedown)
 
 panderOptions('knitr.auto.asis', FALSE)
 
@@ -218,22 +222,22 @@ rm(list=ls())
   
   rm(rainfall_data_df)  
   
+#  \newpage
+
+  
 
 ```
 
+<br>
+<br>
+<br>
+<br>
 
-
-
-
-
-\blandscape
 ```{r stats-hourly-to-yearly, eval= TRUE, echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=14,fig.height=10}
 
   # unused chunk option for figures
 
     # out.width='.89\\linewidth'
-
-
 
 # keep the following line; but not sure if it works
 # cat("\\newpage")
@@ -322,11 +326,38 @@ rm(list=ls())
      
         
       # apply 'knitr::kable' and 'kableExtra' with bold format for the header
-      table_1 <- stats_5_min_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::kable_styling(latex_options = "scale_down")
+      # table_1 <- stats_5_min_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::kable_styling(latex_options = "scale_down")
       
       # print the result so it shows up in the PDF output
-      print(table_1)
-    
+      # print(table_1)
+      
+      
+      # keep the following line; but not sure if it works
+      cat("\\newpage")
+      
+      # use the 'flextable' package to create table
+      
+      # fp_border_default(width=1)
+      
+      stats_5_min_df %>%  flextable() %>% 
+      align(align="center",part = "all") %>% 
+      set_caption(caption = "Rainfall Statistics: 5 minute Data") %>% 
+      font(fontname = "Calibri (Body)", part = "all") %>% 
+      fontsize(size = 10, part = "body") %>% 
+      # add footer if you want
+      # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+      #                colwidths = 4) %>% 
+      bold(bold=TRUE,part = "header") %>% 
+        # FIX THE FOLLOWING LINE - MISSING SOME QUOTES
+        
+      fp_border_default(color = black,width=1) %>% 
+      border_inner(part = "all") %>%
+      fit_to_width(max_width = 8) %>%
+      theme_booktabs() # default theme
+      # next line disabled  
+      # autofit()
+          
+      
       
       # filter for the May to September rainfall
       rain_5_min_may_sept <- rain_5_min %>% filter(Month >= 5 & Month <= 9)
@@ -359,31 +390,7 @@ rm(list=ls())
       # rain_yearly_agg <- aggregate(Rainfall~Year,rain_5_min_may_sept,sum) %>% select(Rainfall)      
       
       
-     
-      # # get the hourly rainfall
-      # # Note: you have to add 'ungroup()' before the select command to extract only the hourly.rainfall *** 
-      # 
-      #  rain_hourly <- rain_5_min_may_sept %>% group_by(Year,Month,Day,Hour) %>% summarize(summary.rainfall=sum(Rainfall)) %>% ungroup() %>% select(summary.rainfall)
-      #  
-      #   rain_hourly_test <- rain_5_min_may_sept %>% group_by(Year,Month,Day,Hour) %>% summarize(hourly.sum.rainfall=sum(Rainfall))
-      #   
-      #   rain_monthly_test <- rain_5_min_may_sept %>% group_by(Year,Month) %>% summarize(monthly.rainfall=sum(Rainfall))
-      # 
-      # # get the daily rainfall
-      # rain_daily <- rain_5_min_may_sept %>% group_by(Year,Month,Day) %>% summarize(summary.rainfall=sum(Rainfall)) %>% ungroup() %>% select(summary.rainfall)
-      # 
-      # # get the weekly rainfall
-      # rain_weekly <- rain_5_min_may_sept %>% group_by(Year,Month,Week) %>% summarize(summary.rainfall=sum(Rainfall)) %>% ungroup() %>% select(summary.rainfall)
-      # 
-      #  # get the monthly rainfall
-      # rain_monthly <- rain_5_min_may_sept %>% group_by(Year,Month) %>% summarize(summary.rainfall=sum(Rainfall)) %>% ungroup() %>% select(summary.rainfall)
-      # 
-      #  # get the yearly rainfall
-      # # rain_yearly<- rain_5_min_may_sept %>% group_by(Year) %>% summarize(summary.rainfall=sum(Rainfall)) %>% ungroup() %>% select(summary.rainfall)
-      # 
-      #  rain_yearly<- rain_5_min_may_sept %>% group_by(Year) %>% summarize(yearly.rainfall=sum(Rainfall))
-      # 
-       
+    
       
     
       
@@ -407,9 +414,15 @@ rm(list=ls())
       # use 'bind_cols' to combine the list of dataframes to one dataframe
 
       stats_df_bind_cols <- bind_cols(stats_df_list)
+      
+      # cbind in the rownames so they appear when you knitr to Word
+      
+      stats_df_bind_cols <- cbind(rownames(stats_df_bind_cols),stats_df_bind_cols)
 
       # add column names
-      colnames(stats_df_bind_cols) <- c("Hourly","Daily","Weekly","Monthly","Yearly")
+      # colnames(stats_df_bind_cols) <- c("Hourly","Daily","Weekly","Monthly","Yearly")
+      
+      colnames(stats_df_bind_cols) <- c("Statistic","Hourly","Daily","Weekly","Monthly","Yearly")
 
       # add Site.Name to the dataframe - this may be optional - under review
 
@@ -421,27 +434,28 @@ rm(list=ls())
       CSV_file_name<-paste0(site_prefix,"_stats_summary_hourly_to_yearly.csv")
       CSV_outfile<-file.path(stats_folder_1, CSV_file_name)
 
-       # write the results to .CSV file
-       write.table(stats_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
-
-
-        # create table #2 using kable
-
-      table_caption<-paste0(site_prefix,' Rainfall Statistics: Hourly to Yearly [Filter: May to September]')
-
-      # Note the use of the print command; this forces the output to come before the chart
-
-      # apply 'knitr::kable' and 'kableExtra' with header, row, and column specs
-
-       table_2 <- stats_df_bind_cols %>% knitr::kable(caption = table_caption, digits = 3) %>%
-         kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::column_spec(1,width = "3cm") %>%
-          kableExtra::column_spec(2:6,width = "2.2cm")
-
-      # print the result so it shows up in the PDF output
-      print(table_2)
+      # write the results to .CSV file
+      write.table(stats_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
 
 
 
+   # use the 'flextable' package to create table
+      
+      stats_df_bind_cols %>%  flextable() %>% 
+      align(align="left",part = "all") %>% 
+      set_caption(caption = "Rainfall Statistics: Hourly to Yearly [Filter: May to September]") %>% 
+      font(fontname = "Calibri (Body)", part = "all") %>% 
+      fontsize(size = 10, part = "body") %>% 
+      # add footer if you want
+      # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+      #                colwidths = 4) %>% 
+      bold(bold=TRUE,part = "header") %>% 
+      border_inner(part = "all") %>%
+      # fit_to_width(max_width = 8) %>%
+      theme_booktabs() %>% # default theme
+      # next line disabled  
+      autofit()
+      
       
       
       
@@ -491,10 +505,10 @@ rm(list=ls())
       
       # table_3 <- max_events_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::kable_styling(latex_options = "scale_down")
       
-      table_3 <- max_events_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) 
+      # table_3 <- max_events_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) 
      
       # print the result so it shows up in the PDF output
-      print(table_3)
+      # print(table_3)
      
   
 ``` 
@@ -649,7 +663,7 @@ rm(list=ls())
 \blandscape
 
 
-```{r charts-part-3,eval= TRUE,echo = FALSE,message=FALSE, warning=FALSE}
+```{r charts-part-3,eval= FALSE,echo = FALSE,message=FALSE, warning=FALSE}
 
     # purpose: scatterplot of the yearly (i.e. May to Sept.) City of Calgary rain gauge rainfall versus the YYC International Airport yearly rainfall 
     
