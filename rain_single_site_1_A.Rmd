@@ -75,7 +75,7 @@ library(kableExtra)
 library(hydroTSM)
 library(cowplot)
 library(flextable)
-library(officedown)
+library(officer) #see page 30 'flextable' package
 
 panderOptions('knitr.auto.asis', FALSE)
 
@@ -321,44 +321,49 @@ rm(list=ls())
                                     "pct.May.to.Sept"=pct.May.to.Sept)  
       
      
-      # create table #1 using kable
-      table_caption<-paste0(site_prefix,' Rainfall Statistics: 5 minute Data')
-     
-        
-      # apply 'knitr::kable' and 'kableExtra' with bold format for the header
-      # table_1 <- stats_5_min_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::kable_styling(latex_options = "scale_down")
-      
-      # print the result so it shows up in the PDF output
-      # print(table_1)
-      
-      
       # keep the following line; but not sure if it works
       cat("\\newpage")
       
       # use the 'flextable' package to create table
       
-      # fp_border_default(width=1)
+      # set up a standard border to 'flextable'; requires 'officer' package
+      std_border <- fp_border(color="black",width=1.5)
       
-      stats_5_min_df %>%  flextable() %>% 
-      align(align="center",part = "all") %>% 
-      set_caption(caption = "Rainfall Statistics: 5 minute Data") %>% 
-      font(fontname = "Calibri (Body)", part = "all") %>% 
-      fontsize(size = 10, part = "body") %>% 
-      # add footer if you want
-      # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-      #                colwidths = 4) %>% 
-      bold(bold=TRUE,part = "header") %>% 
-        # FIX THE FOLLOWING LINE - MISSING SOME QUOTES
-        
-      fp_border_default(color = black,width=1) %>% 
-      border_inner(part = "all") %>%
-      fit_to_width(max_width = 8) %>%
-      theme_booktabs() # default theme
-      # next line disabled  
-      # autofit()
+      # KEEP THE FOLLOWING FOR NOW:
+      
+      # stats_5_min_df %>%  flextable() %>% 
+      # align(align="center",part = "all") %>% 
+      # set_caption(caption = "Rainfall Statistics: 5 minute Data") %>% 
+      # # font(fontname = "Calibri (Body)", part = "all") %>% 
+      # # fontsize(size = 10, part = "body") %>% 
+      # # add footer if you want
+      # # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
+      # #                colwidths = 4) %>% 
+      # bold(bold=TRUE,part = "header") %>% 
+      # border_inner(border=std_border,part = "all") %>%
+      # fit_to_width(max_width = 8) %>%
+      # bg(bg="#EFEFEF") 
+      # # next line disabled  
+      # # autofit()
           
+      # use the 'flextable' package to create table
       
+      # create table caption (dynamic)
+      table_caption<-paste0(site_prefix,' Rainfall Statistics: 5 minute Data')      
       
+      stats_5_min_df %>%  flextable() %>%
+      set_caption(caption = table_caption) %>%
+      fontsize(size = 10, part = "all") %>%
+      colformat_double(j=c(2,3,9,11),digits = 4) %>% 
+      theme_vanilla() %>%
+      fit_to_width(max_width = 8)
+      # # autofit()
+          
+       # insert line breaks
+      cat("<br/>")
+      cat("<br/>")
+      cat("<br/>")
+    
       # filter for the May to September rainfall
       rain_5_min_may_sept <- rain_5_min %>% filter(Month >= 5 & Month <= 9)
       
@@ -377,31 +382,12 @@ rm(list=ls())
       
       # view(rain_yearly)
       
-      # try aggregate from base R - NOT USED - BUT KEEP FOR NOW
-      
-      # rain_hourly_agg <- aggregate(Rainfall~Year + Month + Week + Day + Hour,rain_5_min_may_sept,sum) %>% select(Rainfall)
-       
-      # rain_daily_agg <- aggregate(Rainfall~Year + Month + Week + Day,rain_5_min_may_sept,sum) %>% select(Rainfall)
-       
-      # rain_weekly_agg <- aggregate(Rainfall~Year + Month + Week,rain_5_min_may_sept,sum) %>% select(Rainfall)
-       
-      # rain_monthly_agg <- aggregate(Rainfall~Year + Month,rain_5_min_may_sept,sum) %>% select(Rainfall)
-       
-      # rain_yearly_agg <- aggregate(Rainfall~Year,rain_5_min_may_sept,sum) %>% select(Rainfall)      
-      
-      
-    
-      
-    
-      
       # create a list of the rain interval results; just the 'Rainfall' from the summarize approach
 
       # rain_list_1 <- list(rain_hourly,rain_daily,rain_weekly,rain_monthly,rain_yearly)
 
       rain_list_1 <- list(rain_hourly$Rainfall.mm,rain_daily$Rainfall.mm,rain_weekly$Rainfall.mm,rain_monthly$Rainfall.mm,rain_yearly$Rainfall.mm)
 
-      
-      
       
       # use 'map' to convert the list of tibbles to a list of dataframes
 
@@ -437,26 +423,22 @@ rm(list=ls())
       # write the results to .CSV file
       write.table(stats_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
 
-
-
-   # use the 'flextable' package to create table
+      # keep the following line; but not sure if it works
+      cat("\\newpage")
       
-      stats_df_bind_cols %>%  flextable() %>% 
-      align(align="left",part = "all") %>% 
-      set_caption(caption = "Rainfall Statistics: Hourly to Yearly [Filter: May to September]") %>% 
-      font(fontname = "Calibri (Body)", part = "all") %>% 
-      fontsize(size = 10, part = "body") %>% 
-      # add footer if you want
-      # add_footer_row(values = "* p < 0.05. ** p < 0.01. *** p < 0.001.", 
-      #                colwidths = 4) %>% 
-      bold(bold=TRUE,part = "header") %>% 
-      border_inner(part = "all") %>%
-      # fit_to_width(max_width = 8) %>%
-      theme_booktabs() %>% # default theme
-      # next line disabled  
+       # use the 'flextable' package to create table
+      
+      # create table caption (dynamic)
+      table_caption<-paste0(site_prefix,' Summary Statistics: Hourly to Yearly Rainfall (May to September)')            
+      
+      stats_df_bind_cols %>%  flextable() %>%
+      set_caption(caption = table_caption) %>%
+      # fontsize(size = 10, part = "all") %>%
+      colformat_double(j=c(2:6),digits = 3) %>%
+      colformat_double(i=c(12,13),digits = 0) %>%
+      theme_vanilla() %>%
+      # fit_to_width(max_width = 8)
       autofit()
-      
-      
       
       
       # find the date-time of the maximum hourly / daily / weekly / monthly / yearly rainfall
@@ -497,28 +479,31 @@ rm(list=ls())
       
       # view(max_events_df)
       
+      # keep the following line; but not sure if it works
+      cat("\\newpage")
       
+    
       # create table #3 using kable
       table_caption<-paste0(site_prefix,' Date-Time of Maximum Rainfall - Hourly to Yearly Duration')
-     
-      # apply 'knitr::kable' and 'kableExtra' with bold format for the header
       
-      # table_3 <- max_events_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) %>% kableExtra::kable_styling(latex_options = "scale_down")
+       # use the 'flextable' package to create table
       
-      # table_3 <- max_events_df %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) 
-     
-      # print the result so it shows up in the PDF output
-      # print(table_3)
-     
+      max_events_df %>%  flextable() %>%
+      set_caption(caption = table_caption) %>%
+      # fontsize(size = 10, part = "all") %>%
+      colformat_double(j=1,digits = 0,big.mark = "") %>%
+      # colformat_double(i=c(12,13),digits = 0) %>%
+      theme_vanilla() %>%
+      # fit_to_width(max_width = 8)
+      autofit()      
+      
+      
   
 ``` 
-\elandscape
 
-
-\blandscape
 \newpage
 
-```{r charts-part-1, eval= FALSE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=9,fig.asp=0.618,fig.align='centre'}
+```{r charts-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
 
       # get the yearly 5-minute data count for the bar chart (ggplot)
@@ -533,7 +518,7 @@ rm(list=ls())
       outfile_name<-paste0(site_prefix," - ", "n_total_5_minute_data_count.png")
       
       # specify directory name
-      PNG_folder_name<-stats_folder_3
+      # PNG_folder_name<-stats_folder_3
       
       # change the year from numeric to factor
     p1<-ggplot(data=yearly_data_count, aes(x = factor(Year),y = n,fill=Year)) +
@@ -545,19 +530,22 @@ rm(list=ls())
         scale_y_continuous(labels=comma) +
         xlab("") +
         guides(fill=FALSE) +
-      
         theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-      
         theme(plot.title = element_text(hjust = 0.5)) +
         theme(plot.title = element_text(size = 12)) +
         ggtitle(chart_title)
       # outfile<-file.path(PNG_folder_name,outfile_name)
       # ggsave(outfile,p1,width= 6, height=3.708, dpi=600,units=c("in"))
-      # print(p1)
+      print(p1)
     rm(chart_title,outfile_name,PNG_folder_name,outfile) #outfile variable is used again later
   
    
     # plot May - Sept 'annual' rainfall data - plot in descending order
+    
+     # insert line breaks
+      cat("<br/>")
+      cat("<br/>")
+      cat("<br/>")
   
   # create chart title (dynamic)
   chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "May-Sept. Rainfall by Year - Descending")
@@ -566,7 +554,10 @@ rm(list=ls())
   outfile_name<-paste0(site_prefix," - ", "May - Sept Rainfall - Desc.png")
   
    # specify directory name
-    PNG_folder_name<-stats_folder_3
+    # PNG_folder_name<-stats_folder_3
+    
+  # keep the following line; but not sure if it works
+  # cat("\\newpage")
   
   p2<-ggplot(data=rain_yearly, aes(x = reorder(Year, -Rainfall.mm),y=Rainfall.mm,fill=Year)) +
     geom_bar(stat = "identity",position=position_dodge()) +
@@ -576,29 +567,25 @@ rm(list=ls())
     scale_y_continuous(limits = c(0,500)) +
     xlab("") +
     guides(fill=FALSE) +
-    
     theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-   
     theme(plot.title = element_text(hjust = 0.5)) +
     theme(plot.title = element_text(size = 12)) +
     ggtitle(chart_title)
-  outfile<-file.path(PNG_folder_name,outfile_name)
+  # outfile<-file.path(PNG_folder_name,outfile_name)
   # ggsave(outfile,p2,width= 6, height=3.708, dpi=600,units=c("in"))
-  # print(p2)
+  print(p2)
   rm(chart_title,outfile_name,PNG_folder_name,outfile) #outfile variable is used again later
   
   
   # use 'plot-grid' from cowplot package to to plot p1, p2 stacked one over the other
   
-   plot_grid(p1,p2,nrow=2) %>% print()
+   # plot_grid(p1,p2,nrow=2) %>% print()
    
 
 ```
-\elandscape
 
-\blandscape
 
-```{r charts-part-2, eval= FALSE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=9,fig.asp=0.618,fig.align='centre'}
+```{r charts-part-2, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
 
     # create histogram of hourly rainfall data (cut off = 1 mm)
@@ -624,10 +611,15 @@ rm(list=ls())
         ggtitle(chart_title)
       # outfile<-file.path(PNG_folder_name,outfile_name)
       # ggsave(outfile,p3,width= 6, height=3.708, dpi=600,units=c("in"))
-      # print(p3)
+      print(p3)
     
     
      # create histogram for daily rainfall events
+    
+     # insert line breaks
+      cat("<br/>")
+      cat("<br/>")
+      cat("<br/>")
       
     # filter for events greater than 5 mm
 
@@ -649,27 +641,24 @@ rm(list=ls())
         ggtitle(chart_title)
       # outfile<-file.path(PNG_folder_name,outfile_name)
       # ggsave(outfile,p4,width= 6, height=3.708, dpi=600,units=c("in"))
-      # print(p4)
+      print(p4)
     
     
      # use 'plot-grid' from cowplot package to to plot p3, p4
   
-      plot_grid(p3,p4,nrow=2) %>% print()
+      # plot_grid(p3,p4,nrow=2) %>% print()
     
     
 ```
-\elandscape
-
-\blandscape
 
 
-```{r charts-part-3,eval= FALSE,echo = FALSE,message=FALSE, warning=FALSE}
+```{r charts-part-3,eval= TRUE,echo = FALSE,message=FALSE, warning=FALSE}
 
     # purpose: scatterplot of the yearly (i.e. May to Sept.) City of Calgary rain gauge rainfall versus the YYC International Airport yearly rainfall 
     
     # the 'rain_yearly' tibble for the City site was originally created on line 385 of chunk 3
     
-    # rename the 2nd column in the tibble ('Rainfall.mm') to generic names for easier plotting ''Rainfall.mmCity'
+    # rename the 2nd column in the tibble ('Rainfall.mm') to 'Rainfall.mm.City.gauge
 
     colnames(rain_yearly) <- c("Year","Rainfall.mm.City.gauge")
 
@@ -698,7 +687,7 @@ rm(list=ls())
   ## Note: DO NOT MESS MUCH WITH THE FOLLOWING CODE FOR the p5 plot. It took a while to get it looking right. 
     
       # create chart title (dynamic)
-      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Yearly Rainfall (May to Sept.) versus Calgary Intl. Airport")
+      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Yearly Rainfall (May to Sept.) vs. Calgary Intl. Airport")
       
       p6<-ggplot() +
       geom_point(data = join_City_and_YYC, shape=19, size=3,colour="blue",aes(x = Rainfall.mm.YYC,y = Rainfall.mm.City.gauge)) + 
@@ -706,7 +695,7 @@ rm(list=ls())
         scale_x_continuous(limits = c(0,500)) +
         scale_y_continuous(limits = c(0,500)) +
         theme(plot.title = element_text(hjust = 0.5)) +
-        theme(plot.title = element_text(size = 12)) +
+        theme(plot.title = element_text(size = 11)) +
       ggtitle(chart_title)
       print(p6)
       
@@ -714,9 +703,7 @@ rm(list=ls())
 ```
 \elandscape
 
-```{r event-statistics-part-1, eval=FALSE, echo = FALSE,message=FALSE, warning=FALSE}
-
-
+```{r event-statistics-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
 
 # this code was copied from 'duration_analysis_1.R' file (project: 3900_CITY_WIDE_RAINFALL_MIT_PART_2)
 # the read function was removed because the 5-minute rainfall data was already read in a previous chunk
@@ -878,10 +865,8 @@ rm(list=ls())
        # SECTION: rainfall summary stats - NEW
       
       # summarize based on the last line of each event, which has the total cumulative.rainfall, duration, and rainfall intensity
-      
-      # last_line_df<- RainEvents_df_long %>% group_by(.id) %>% summarize(depth=last(cumulative.rainfall), duration.minutes=last(event.duration.minutes),duration.hours=last(event.duration.hours),rainrate.mm.hr=last(event.rainrate.mm.hr),max.intensity.mm.hr=max(intensity.mm.hr,na.rm=TRUE))
-      
-       depth<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(depth=last(cumulative.rainfall)) %>% select(depth) 
+  
+             depth<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(depth=last(cumulative.rainfall)) %>% select(depth) 
        
        duration_hours<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(duration=last(event.duration.hours)) %>% select(duration)
        
@@ -916,21 +901,87 @@ rm(list=ls())
       
       # create a file name to save the files for each site
       CSV_file_name<-paste0(site_prefix,"_Statistics_Rainfall_Events","_MIT_",MIT_value[i],".csv")
-      CSV_outfile<-file.path(stats_folder_3, CSV_file_name)
+      CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
         
        # write the results to .CSV file
        write.table(x,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
        
+     
       
   }     # end of 'seq_along(MIT_value)'
+     
       
-   
+      # keep the following line; but not sure if it works
+      cat("\\newpage") 
+     
+      # create a list of the saved stats files (file paths / filenames)
+      stats_path_and_filenames <- list.files(stats_folder_2,full.names = TRUE)
+      
+      stats_filenames_only <- list.files(stats_folder_2,full.names = FALSE)
+      
+      
+       # use the 'flextable' package to create FIRST table (e.g. MIT 60)
+      
+       # strip out .csv extension
+      stats_filenames_2 <-  sub('\\.csv$', '', stats_filenames_only[2]) 
+      
+      # read the data into a dataframe
+      table_data_2 <- read.table(stats_path_and_filenames[2],sep=",",header=TRUE,stringsAsFactors = FALSE)
+      
+      # create table caption (dynamic)
+      table_caption<- stats_filenames_2
+      
+      table_data_2 %>%  flextable() %>%
+      set_caption(caption = table_caption) %>%
+      # fontsize(size = 10, part = "all") %>%
+      # colformat_double(j=c(2:6),digits = 3) %>%
+      # colformat_double(i=c(12,13),digits = 0) %>%
+      theme_vanilla() %>%
+      # fit_to_width(max_width = 8)
+      autofit()
+        
+      
+      # keep the following line; but not sure if it works
+      cat("\\newpage") 
+      
+      
+       # use the 'flextable' package to create SECOND table (e.g. MIT 360)
+      
+       # strip out .csv extension
+      stats_filenames_1 <-  sub('\\.csv$', '', stats_filenames_only[1]) 
+      
+      # read the data into a dataframe
+      table_data_1 <- read.table(stats_path_and_filenames[1],sep=",",header=TRUE,stringsAsFactors = FALSE)
+      
+      # create table caption (dynamic)
+      table_caption<- stats_filenames_1
+      
+      table_data_1 %>%  flextable() %>%
+      set_caption(caption = table_caption) %>%
+      # fontsize(size = 10, part = "all") %>%
+      # colformat_double(j=c(2:6),digits = 3) %>%
+      # colformat_double(i=c(12,13),digits = 0) %>%
+      theme_vanilla() %>%
+      # fit_to_width(max_width = 8)
+      autofit()
+             
+      
+     
+      
+      
+     
+      
+      
+      
+      
+       
+       
     
 ```
 
+\newpage
 
-
-```{r event-statistics-part-2, eval=FALSE, echo = FALSE,message=FALSE, warning=FALSE}
+```{r event-statistics-part-2, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
 
   ## this chunk extracts the gap times between rainfall events - by year
 
@@ -984,7 +1035,7 @@ rm(list=ls())
           # temporary - save the RAINFALL FOR EACH YEAR to a csv.file - ** OPTIONAL ** 
           # create a file name to save the file for each site (** dynamic **)
           # CSV_file_name<-paste0(site_prefix,"_Rainfall_BY_YEAR","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
-          # CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+          # CSV_outfile<-file.path(stats_folder_3, CSV_file_name)
     
           # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
           # write.table(rain_by_year,CSV_outfile,sep=",",col.names=TRUE,row.names=FALSE)
@@ -1028,8 +1079,7 @@ rm(list=ls())
            
           temp_data<- rain_by_year %>% filter(Date.Time >= first_dt & Date.Time <= last_dt)
           
-          # add the rainfall event .id; this is just the individual element number of the RainEvents list, but ...
-          # you have to subtract 1 so that the id's start at 0, not 1
+          # add the rainfall event .id; this is just the individual element number of the RainEvents list,            # but ... you have to subtract 1 so that the id's start at 0, not 1
           
           ID<-j-1  # notice you need to subtract 1, to force the rainfall event id's to start at zero
          
@@ -1081,7 +1131,7 @@ rm(list=ls())
           # temporary - save the gap times to a csv.file; OPTIONAL - GOOD FOR TESTING
           # create a file name to save the file for each site (** dynamic **)
           # CSV_file_name<-paste0(site_prefix,"_Rainfall_Gap Times","_Year_",year_as_numeric[s],"_MIT_",MIT_value[i],".csv")
-          # CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+          # CSV_outfile<-file.path(stats_folder_3, CSV_file_name)
     
           # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
           # write.table(gap_times_df,CSV_outfile,sep=",",col.names=TRUE,row.names=FALSE)
@@ -1104,7 +1154,7 @@ rm(list=ls())
     
           # create a file name to save the file for each site (** dynamic **)
           CSV_file_name<-paste0(site_prefix,"_Stats_Rainfall_Gap Times","_MIT_",MIT_value[i],".csv")
-          CSV_outfile<-file.path(stats_folder_2, CSV_file_name)
+          CSV_outfile<-file.path(stats_folder_3, CSV_file_name)
     
           # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
           write.table(smry_gap_times_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
@@ -1123,17 +1173,7 @@ rm(list=ls())
 ```{r tables-part-2, eval=FALSE, echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=14,fig.height=10}
 
 
-      dummy_data <- data.frame(cbind("col.one"=1:10,"col.two"=11:20))
-
-      # apply 'knitr::kable' and 'kableExtra' with bold format for the header
-      
-      dummy_table <- dummy_data %>% knitr::kable(caption = table_caption, digits = 3) %>% kableExtra::row_spec(0,bold = TRUE) 
      
-      # print the result so it shows up in the PDF output
-      # print(dummy_table)  
-      
-      
-      
       ## create tables of the summary statistics for Rainfall Events
     
     # read the first file
