@@ -9,13 +9,23 @@ header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
+
+
 output:
   word_document: default
-  classoption: landscape # does not seem to work (30-JAN-2021)
-  html_notebook: default
-  pdf_document: default
-  html_document:
-    df_print: paged
+
+# output: 
+#     word_document:
+#       reference_docx: mystyles.docx
+
+# output:
+#   word_document: default
+#   html_notebook: default
+#   pdf_document: default
+#   html_document:
+#     df_print: paged
+
+    
 ---
 
 ##Project Description
@@ -228,10 +238,9 @@ rm(list=ls())
 
 ```
 
-<br>
-<br>
-<br>
-<br>
+
+##### Page Break
+
 
 ```{r stats-hourly-to-yearly, eval= TRUE, echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=14,fig.height=10}
 
@@ -324,6 +333,8 @@ rm(list=ls())
       # keep the following line; but not sure if it works
       cat("\\newpage")
       
+      
+      
       # use the 'flextable' package to create table
       
       # set up a standard border to 'flextable'; requires 'officer' package
@@ -360,9 +371,9 @@ rm(list=ls())
       # # autofit()
           
        # insert line breaks
-      cat("<br/>")
-      cat("<br/>")
-      cat("<br/>")
+      # cat("<br/>")
+      # cat("<br/>")
+      # cat("<br/>")
     
       # filter for the May to September rainfall
       rain_5_min_may_sept <- rain_5_min %>% filter(Month >= 5 & Month <= 9)
@@ -422,10 +433,10 @@ rm(list=ls())
 
       # write the results to .CSV file
       write.table(stats_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
-
-      # keep the following line; but not sure if it works
-      cat("\\newpage")
       
+      ##### Page Break
+
+     
        # use the 'flextable' package to create table
       
       # create table caption (dynamic)
@@ -479,10 +490,9 @@ rm(list=ls())
       
       # view(max_events_df)
       
-      # keep the following line; but not sure if it works
-      cat("\\newpage")
+      ##### Page Break
+     
       
-    
       # create table #3 using kable
       table_caption<-paste0(site_prefix,' Date-Time of Maximum Rainfall - Hourly to Yearly Duration')
       
@@ -497,11 +507,13 @@ rm(list=ls())
       # fit_to_width(max_width = 8)
       autofit()      
       
-      
+      ##### Page Break
   
 ``` 
 
 \newpage
+
+
 
 ```{r charts-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
@@ -537,8 +549,7 @@ rm(list=ls())
       # outfile<-file.path(PNG_folder_name,outfile_name)
       # ggsave(outfile,p1,width= 6, height=3.708, dpi=600,units=c("in"))
       print(p1)
-    rm(chart_title,outfile_name,PNG_folder_name,outfile) #outfile variable is used again later
-  
+    
    
     # plot May - Sept 'annual' rainfall data - plot in descending order
     
@@ -574,7 +585,6 @@ rm(list=ls())
   # outfile<-file.path(PNG_folder_name,outfile_name)
   # ggsave(outfile,p2,width= 6, height=3.708, dpi=600,units=c("in"))
   print(p2)
-  rm(chart_title,outfile_name,PNG_folder_name,outfile) #outfile variable is used again later
   
   
   # use 'plot-grid' from cowplot package to to plot p1, p2 stacked one over the other
@@ -583,6 +593,8 @@ rm(list=ls())
    
 
 ```
+
+\newpage
 
 
 ```{r charts-part-2, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
@@ -652,6 +664,8 @@ rm(list=ls())
 ```
 
 
+\newpage
+
 ```{r charts-part-3,eval= TRUE,echo = FALSE,message=FALSE, warning=FALSE}
 
     # purpose: scatterplot of the yearly (i.e. May to Sept.) City of Calgary rain gauge rainfall versus the YYC International Airport yearly rainfall 
@@ -701,7 +715,10 @@ rm(list=ls())
       
 
 ```
-\elandscape
+
+
+\newpage
+
 
 ```{r event-statistics-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
 
@@ -866,11 +883,11 @@ rm(list=ls())
       
       # summarize based on the last line of each event, which has the total cumulative.rainfall, duration, and rainfall intensity
   
-             depth<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(depth=last(cumulative.rainfall)) %>% select(depth) 
+      depth<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(depth=last(cumulative.rainfall)) %>% select(depth) 
        
-       duration_hours<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(duration=last(event.duration.hours)) %>% select(duration)
+      duration_hours<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(duration=last(event.duration.hours)) %>% select(duration)
        
-       intensity<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(intensity=last(event.rainrate.mm.hr)) %>% select(intensity)
+      intensity<- RainEvents_df_long %>% group_by(.id) %>% dplyr::summarize(intensity=last(event.rainrate.mm.hr)) %>% select(intensity)
        
      
       # create a list of the depth, duration, and intensity results
@@ -912,7 +929,9 @@ rm(list=ls())
      
       
       # keep the following line; but not sure if it works
-      cat("\\newpage") 
+      # cat("\\newpage") 
+      
+      ##### Page Break
      
       # create a list of the saved stats files (file paths / filenames)
       stats_path_and_filenames <- list.files(stats_folder_2,full.names = TRUE)
@@ -940,9 +959,9 @@ rm(list=ls())
       # fit_to_width(max_width = 8)
       autofit()
         
+     
       
-      # keep the following line; but not sure if it works
-      cat("\\newpage") 
+      ##### Page Break
       
       
        # use the 'flextable' package to create SECOND table (e.g. MIT 360)
@@ -964,19 +983,7 @@ rm(list=ls())
       theme_vanilla() %>%
       # fit_to_width(max_width = 8)
       autofit()
-             
       
-     
-      
-      
-     
-      
-      
-      
-      
-       
-       
-    
 ```
 
 \newpage
@@ -1079,7 +1086,8 @@ rm(list=ls())
            
           temp_data<- rain_by_year %>% filter(Date.Time >= first_dt & Date.Time <= last_dt)
           
-          # add the rainfall event .id; this is just the individual element number of the RainEvents list,            # but ... you have to subtract 1 so that the id's start at 0, not 1
+          # add the rainfall event .id; this is just the individual element number of the RainEvents list
+          # but ... you have to subtract 1 so that the id's start at 0, not 1
           
           ID<-j-1  # notice you need to subtract 1, to force the rainfall event id's to start at zero
          
