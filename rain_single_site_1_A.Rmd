@@ -274,11 +274,17 @@ rm(list=ls())
       # create (if necessary) directory - ** first part
       if(dir.exists(stats_folder_2) == FALSE) dir.create(stats_folder_2)
       
-       # create directory to save statistics results
+      # create directory to save statistics results
       stats_folder_3<-'data_out/Stats_Summary_3'
       
       # create (if necessary) directory - ** first part
       if(dir.exists(stats_folder_3) == FALSE) dir.create(stats_folder_3)
+      
+      # create directory to save statistics results
+      stats_folder_4<-'data_out/Stats_Summary_4'
+      
+      # create (if necessary) directory - ** first part
+      if(dir.exists(stats_folder_4) == FALSE) dir.create(stats_folder_4)
       
       
       # read the rainfall data for one site using 'read_csv'
@@ -649,38 +655,6 @@ rm(list=ls())
       # ggsave(outfile,p3,width= 6, height=3.708, dpi=600,units=c("in"))
       print(p3)
       
-      
-      
-      
-       # create histogram for daily rainfall events
-    
-     # insert line breaks
-      # cat("<br/>")
-      # cat("<br/>")
-      # cat("<br/>")
-      
-    # filter for events greater than 5 mm
-
-    rain_daily_GT_2 <- rain_daily %>% filter(Rainfall.mm > 5)
-
-      # create chart title (dynamic)
-      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Daily Rainfall Frequency (> 5 mm)")
-    
-       p4<-ggplot(data=rain_daily_GT_2, aes(x = Rainfall.mm)) +
-        geom_histogram(binwidth=0.5, colour="black", fill="99CC66") +
-        theme(axis.title.x = element_text(size = 12),axis.text.x = element_text(angle=45,hjust=1)) +
-        theme(axis.title.y = element_text(size = 12)) +
-        ylab("Count") +
-        xlab("Rainfall.mm") +
-        # guides(fill=FALSE) +
-        theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-        theme(plot.title = element_text(hjust = 0.5)) +
-        theme(plot.title = element_text(size = 12)) +
-        ggtitle(chart_title)
-      # outfile<-file.path(PNG_folder_name,outfile_name)
-      # ggsave(outfile,p4,width= 6, height=3.708, dpi=600,units=c("in"))
-      print(p4)
-    
     
      # use 'plot-grid' from cowplot package to to plot p3, p4
   
@@ -704,12 +678,12 @@ rm(list=ls())
       
     # filter for events greater than 5 mm
 
-    rain_daily_GT_2 <- rain_daily %>% filter(Rainfall.mm > 5)
+    rain_daily_GT_5 <- rain_daily %>% filter(Rainfall.mm > 5)
 
       # create chart title (dynamic)
       chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Daily Rainfall Frequency (> 5 mm)")
     
-       p4<-ggplot(data=rain_daily_GT_2, aes(x = Rainfall.mm)) +
+       p4<-ggplot(data=rain_daily_GT_5, aes(x = Rainfall.mm)) +
         geom_histogram(binwidth=0.5, colour="black", fill="99CC66") +
         theme(axis.title.x = element_text(size = 12),axis.text.x = element_text(angle=45,hjust=1)) +
         theme(axis.title.y = element_text(size = 12)) +
@@ -1248,12 +1222,81 @@ rm(list=ls())
           write.table(smry_gap_times_df_bind_cols,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
       
     
+          # create a smaller dataframe with just the Year and Max Gap Time
+          
+          # extract results and transpose for plotting in next code Chunk
+          
+          max_gap_results <- t(smry_gap_times_df_bind_cols[6,])  # i.e. a vector of the Max gap times in row 6
+          
+          max_gap_results <- as.data.frame(max_gap_results)
+          
+          # column bind in the Year for easier plotting
+          
+          max_gap_results <- cbind("Year"=year_as_numeric,max_gap_results)
+          names(max_gap_results)[2] <- "Max.Gap.Time.hrs"
+        
+          # create a file name to save the MAX GAP TIMES for each site (** dynamic **)
+          CSV_file_name<-paste0(site_prefix,"_MAX_Gap_Times","_MIT_",MIT_value[i],".csv")
+          CSV_outfile<-file.path(stats_folder_4, CSV_file_name)
+    
+          # write the results to .CSV file ** note use of 'col.names=NA' to get correct placement of column names
+          # write.table(max_gap_results,CSV_outfile,sep=",",col.names=NA,row.names=FALSE)
+          write.table(max_gap_results,CSV_outfile,sep=",",col.names=TRUE,row.names=FALSE)
+          
+          
+          
+          
   }     # end of 'seq_along(MIT_value)'
 
 
 
 ```
 
+
+## Rainfall Maximum Gap Times - Minimum Inter-Event Time 60 Minutes
+
+```{r gaptime-barchart-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
+
+  # create bar chart of the maximum gap time (hours) by Year
+
+      # for now just report the MIT 60 minute results; 
+  
+      # create a list of the saved results files (file paths / filenames)
+      gap_path_and_filenames <- list.files(stats_folder_4,full.names = TRUE)
+        
+      # read the data into a dataframe
+      table_data_4 <- read.table(gap_path_and_filenames[2],sep=",",header=TRUE,stringsAsFactors = FALSE)
+      
+     # create bar chart of the MAXIMUM GAP TIMES; MIT 6 MIN
+      
+      # create chart title (dynamic)
+      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Max.Gap Times (hours) - by Year")
+     
+      # create chart PNG outile name (dynamic)
+      # outfile_name<-paste0(site_prefix," - ", "Max_Gap_Times.png")
+      
+      # specify directory name
+      # PNG_folder_name<-stats_folder_3
+      
+      # change the year from numeric to factor
+    p7<-ggplot(data=table_data_4, aes(x = factor(Year),y = Max.Gap.Time.hrs,fill=Year)) +
+        geom_bar(stat = "identity",position=position_dodge()) +
+        theme(axis.title.x = element_text(size = 12),axis.text.x = element_text(angle=45,hjust=1)) +
+        theme(axis.title.y = element_text(size = 12)) +
+        ylab("Max.Gap.Time.hours") +
+        # note: following requires library(scales)
+        scale_y_continuous(labels=comma) +
+        xlab("") +
+        guides(fill=FALSE) +
+        theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        theme(plot.title = element_text(size = 12)) +
+        ggtitle(chart_title)
+      # outfile<-file.path(PNG_folder_name,outfile_name)
+      # ggsave(outfile,p1,width= 6, height=3.708, dpi=600,units=c("in"))
+      print(p7)
+      
+```
 \blandscape
 
 
@@ -1266,7 +1309,7 @@ rm(list=ls())
       # for now just report the MIT 60 minute results; split the table into 3 parts for readability
   
       # create a list of the saved stats files (file paths / filenames)
-      stats_path_and_filenames <- list.files(stats_folder_3,full.names = TRUE)
+      stats_path_and_filenames <- list.files(stats_folder_4,full.names = TRUE)
         
       stats_filenames_only <- list.files(stats_folder_3,full.names = FALSE)
       
