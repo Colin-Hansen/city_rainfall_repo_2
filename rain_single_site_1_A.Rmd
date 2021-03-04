@@ -1283,88 +1283,110 @@ rm(list=ls())
       
       
         # use the 'flextable' package to create MASTER table (e.g. MIT 60); may not be very readable
+      
+      ############## If block #1 ########################
        
-      if (ncol(table_data_3) <= 10) {
-      
-        # table of all available data
-        
-        table_data_3 %>%  flextable() %>%
-          # set_caption(caption = table_caption) %>%
-          # fontsize(size = 10, part = "all") %>%
-          # colformat_double(j=c(2:4),digits = 3) %>%
-          colformat_double(i=c(12,13),digits = 0) %>%
-          theme_vanilla() %>%
-          # fit_to_width(max_width = 8)
-          autofit() 
-      
-      }
-      
-     
-      if (ncol(table_data_3) > 10 & ncol(table_data_3)<=20) {
-      
-        last_col <- ncol(table_data_3)
-        
-        # select column 10 to last 
-      
-        table_data_3_part_2 <- table_data_3[,c(1,10:last_col)]
-      
-        # use the 'flextable' package to create SECOND table (e.g. MIT 60)
-      
-        table_data_3_part_2 %>%  flextable() %>%
-        # set_caption(caption = table_caption) %>%
-        # fontsize(size = 10, part = "all") %>%
-        # colformat_double(j=c(2:4),digits = 3) %>%
-        colformat_double(i=c(12,13),digits = 0) %>%
-        theme_vanilla() %>%
-        # fit_to_width(max_width = 8)
-        autofit()
-      }
-      
-      
-       if (ncol(table_data_3) > 20 & ncol(table_data_3)<=30) {
-      
-        last_col <- ncol(table_data_3)
-        
-        # select column 21 to last 
-      
-        table_data_3_part_3 <- table_data_3[,c(1,21:last_col)]
-      
-        # use the 'flextable' package to create SECOND table (e.g. MIT 60)
-      
-        table_data_3_part_3 %>%  flextable() %>%
-        # set_caption(caption = table_caption) %>%
-        # fontsize(size = 10, part = "all") %>%
-        # colformat_double(j=c(2:4),digits = 3) %>%
-        colformat_double(i=c(12,13),digits = 0) %>%
-        theme_vanilla() %>%
-        # fit_to_width(max_width = 8)
-        autofit()
-        
-      }
-      
-      
       if (ncol(table_data_3) > 30) {
       
         last_col <- ncol(table_data_3)
         
-        # select column 31 to last 
+        # select column 1 to 10
       
-        table_data_3_part_4 <- table_data_3[,c(1,31:last_col)]
+        t1 <- table_data_3[,1:10]
       
-        # use the 'flextable' package to create SECOND table (e.g. MIT 60)
-      
-        table_data_3_part_4 %>%  flextable() %>%
+        t1 %>%  flextable() %>%
         # set_caption(caption = table_caption) %>%
         # fontsize(size = 10, part = "all") %>%
-        # colformat_double(j=c(2:4),digits = 3) %>%
-        colformat_double(i=c(12,13),digits = 0) %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+        
+        # select column 11 to 19
+      
+        t2 <- table_data_3[,c(1,11:19)]
+      
+        t2 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+      
+        # select column 20 to 29
+      
+        t3 <- table_data_3[,c(1,20:29)]
+      
+        t3 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+        
+        
+        # select column 30 to last_col
+      
+        t4 <- table_data_3[,c(1,30:last_col)]
+      
+        t4 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
         theme_vanilla() %>%
         # fit_to_width(max_width = 8)
         autofit()
         
       }
-
+      
+      ############## If block #2 ########################
+       
+      if (ncol(table_data_3) > 20 & ncol(table_data_3) <= 30) {
+      
+        last_col <- ncol(table_data_3)
         
+        # select column 1 to 10
+      
+        t1 <- table_data_3[,1:10]
+      
+        t1 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+        
+        # select column 11 to 19
+      
+        t2 <- table_data_3[,c(1,11:19)]
+      
+        t2 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+      
+        # select column 20 to last_col
+      
+        t3 <- table_data_3[,c(1,20:last_col)]
+      
+        t3 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+        
+      }
+      
+      
+  
 
 ```
 
