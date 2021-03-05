@@ -25,7 +25,7 @@ output:
 
 ##Project Description
 
-Historical rainfall data from the City of Calgary precipitation monitoring network are 
+Historical rainfall data from the City of Calgary precipitation monitoring network is 
 available from 1988 to 2020. The rainfall data files contain 5-minute precipitation amounts,
 in units of mm, based on either tipping bucket or weighing type gauges. 
 
@@ -36,14 +36,18 @@ from the City's Open Data Portal:
 
 [link] (https://data.calgary.ca/Environment/Historical-Rainfall/d9kv-swk3)
 
+This project uses R software to read the historical rainfall data for each rain gauge site for the 
+period 1988-2019. In the first step, the data for each site is compiled into a single .csv file. 
+In the subsequent steps, various summary statistics and charts are created for each site.
+In the final step, the results are exported to a PDF file (one file for each rain gauge site).
 
-This project uses R software to read the historical rainfall data files and
-compile the data into a single .csv file. Based on the compiled data for each site,
-various summary statistics and charts are created and the results are exported to
-PDF files (one summary file for each rain gauge site).
+Discrete rainfall events are identified by specifying the Inter-Event Time (IET), which is 
+the minimum elasped time between rainfall events (i.e. the dry period between events). IET
+values of 60 minutes and 360 minutes were used in this project, based on a review of the 
+literature. 
 
-The results include a comparison of the yearly rainfall at the City rain gauge versus
-the rainfall from the Environment Canada gauge at Calgary Intl. Airport. 
+The analysis for each site includes a comparison between the yearly rainfall at the City rain gauge versus
+the rainfall from the Environment Canada gauge at Calgary International Airport. 
 
 
 ##Project Details
@@ -235,6 +239,8 @@ rm(list=ls())
 \clearpage
 
 \blandscape
+
+## Rain Gauge: S01 Spy Hill
 
 ## Statistics for the 5-minute Raw Rainfall Data  
 
@@ -766,7 +772,7 @@ rm(list=ls())
 \newpage
 
 
-## Rainfall Event Statistics - Minimum Inter-Event Time 60 Minutes
+## Rainfall Event Statistics - IET 60 Minutes
 
 
 ```{r event-statistics-part-1A, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1018,6 +1024,11 @@ rm(list=ls())
       
 ```
 
+
+
+## Boxplot of Rainfall Event Depth, Duration (IET 60 Minutes)
+
+
 ```{r event-boxplot-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
 
   # create boxplot of the rainfall event depth, duration, and intensity; MIT 60 only
@@ -1048,7 +1059,7 @@ rm(list=ls())
         stat_boxplot(geom='errorbar',width=0.3) +  # adds horiz. lines to whiskers
         theme(axis.title.y = element_text(size = 12)) +
         #rotate x-axis test 90 degrees
-        theme(axis.text.x = element_text(angle = 45,vjust = 0.5,size = 8)) +
+        theme(axis.text.x = element_text(angle = 45,vjust = 0.5,size = 11)) +
         ylab("(mm)  (hours)  (mm/hr)") +
         xlab("") +
         #expand_limits(y=c(100,600)) +
@@ -1068,7 +1079,7 @@ rm(list=ls())
 
 \newpage
 
-## Rainfall Event Statistics - Minimum Inter-Event Time 360 Minutes
+## Rainfall Event Statistics (IET 360 Minutes)
 
 
 ```{r event-statistics-part-1B, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1318,7 +1329,7 @@ rm(list=ls())
 ```
 
 
-## Rainfall Maximum Gap Times - Based on MIT (Minimum Inter-Event Time) of 60 Minutes
+## Rainfall Maximum Gap Times - Inter-Event Time (IET) 60 Minutes
 
 ```{r gaptime-barchart-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
@@ -1364,14 +1375,16 @@ rm(list=ls())
 ```
 \newpage
 
-## Rainfall Gap Time Statistics - MIT 60 Minutes (* Note: not all years may be printed to save space *)
+## Rainfall Gap Time Statistics - IET 60 Minutes
+
+## Note: output maximum of 10 years of data - for brevity
 
 
 ```{r gap-times-table-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
 
       # prepare tables of gap time results
   
-      # for now just report the MIT 60 minute results; split the table into 3 parts for readability
+      # for now just report the MIT 60 minute results
   
       # create a list of the saved stats files (file paths / filenames)
       gap_path_and_filenames <- list.files(stats_folder_3,full.names = TRUE)
@@ -1390,7 +1403,7 @@ rm(list=ls())
       
       
       
-        # use the 'flextable' package to create MASTER table (e.g. MIT 60); may not be very readable
+        # use the 'flextable' package to create MASTER table (e.g. MIT 60)
       
       ############## If block #1 ########################
        
@@ -1399,9 +1412,9 @@ rm(list=ls())
         
         # output table if at least 10 columns
       
-        if (last_col >= 10) {
+        if (last_col >= 11) {
       
-        t1 <- table_data_4[,1:10]
+        t1 <- table_data_4[,1:11]
       
         t1 %>%  flextable() %>%
         # set_caption(caption = table_caption) %>%
@@ -1416,7 +1429,7 @@ rm(list=ls())
   
       # output a smaller table if less than 10 columns
       
-        if (last_col < 10) {
+        if (last_col < 11) {
       
         t1 <- table_data_4[,1:last_col]
       
