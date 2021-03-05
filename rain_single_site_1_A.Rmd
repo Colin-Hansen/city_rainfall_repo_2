@@ -1,7 +1,7 @@
 ---
 title: "City of Calgary Rainfall Data Analysis - Single Site Approach"
 author: "Colin Hansen, M.Eng., P. Eng."
-date: "XX-February-2021"
+date: "March-2021"
 # https://stackoverflow.com/questions/25849814/rstudio-rmarkdown-both-portrait-and-landscape-layout-in-a-single-pdf/41945462#41945462
 header-includes:
 - \usepackage{pdflscape}
@@ -52,9 +52,9 @@ the rainfall from the Environment Canada gauge at Calgary Intl. Airport.
 
 **Raw Data Format:** YYYY/MM/DD	HH:MM	   0.0
 
-**Rain Gauge Equipment:** (to follow)
+**Rain Gauge Equipment:** Tipping Bucket (41); Weighing Type (4)
 
-**Number of Locations:** 46 sites
+**Number of Locations:** 45 sites
 
 
 ```{r setup, include=FALSE}
@@ -748,7 +748,7 @@ rm(list=ls())
   ## Note: DO NOT MESS MUCH WITH THE FOLLOWING CODE FOR the p5 plot. It took a while to get it looking right. 
     
       # create chart title (dynamic)
-      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Yearly Rainfall (May to Sept.) vs. Calgary Intl. Airport")
+      chart_title<-paste0("Rain Gauge"," ",site_prefix," ", "Yearly May - September Rainfall vs. Calgary Intl. Airport")
       
       p6<-ggplot() +
       geom_point(data = join_City_and_YYC, shape=1, size=4,colour="blue",aes(x = Rainfall.mm.YYC,y = Rainfall.mm.City.gauge)) + 
@@ -757,7 +757,7 @@ rm(list=ls())
         scale_y_continuous(limits = c(0,500))
       #   theme(plot.title = element_text(hjust = 0.5)) +
       #   theme(plot.title = element_text(size = 11)) +
-      # ggtitle(chart_title)
+      ggtitle(chart_title)
       print(p6)
       
 
@@ -943,12 +943,12 @@ rm(list=ls())
       
       # use 'map' to convert the list of tibbles to a list of dataframes
        
-      ddi_list <- ddi_list %>% map(as.data.frame)
+      ddi_list_df <- ddi_list %>% map(as.data.frame)
       
       
-      # use 'map' instead of seq_along 'ddi_list' to apply 'smry' to the list of dataframes
+      # use 'map' instead of seq_along 'ddi_list_df' to apply 'smry' to the list of dataframes
       
-      stats_df_list <- ddi_list %>% map(hydroTSM::smry)
+      stats_df_list <- ddi_list_df %>% map(hydroTSM::smry)
        
       # use 'bind_cols' to combine the list of dataframes to one dataframe
       
@@ -970,7 +970,20 @@ rm(list=ls())
        # write the results to .CSV file
        write.table(x,CSV_outfile,sep=",",col.names=NA,row.names=TRUE)
        
-     
+       
+       
+    ## ADDED 5-MARCH-2021
+       
+      # save the 'ddf_list' results to a .csv file; ONLY IF MIT = 60
+       
+       if(MIT_value[i] == 60) {
+         
+          # use 'bind_cols' to combine the list of tibbles to one tibble
+          
+          ddi_list_combined <- bind_cols(ddi_list)
+        
+      }
+  
       
   }     # end of 'seq_along(MIT_value)'
      
@@ -1004,6 +1017,55 @@ rm(list=ls())
      
       
 ```
+
+```{r event-boxplot-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
+
+  # create boxplot of the rainfall event depth, duration, and intensity; MIT 60 only
+
+  # source: 'ddi_list_combined' in previous chunk
+
+  
+   # use 'gather' to re-format the results to long format (suitable for ggplot)
+ 
+  gathered_ddi_results <- ddi_list_combined %>% gather(key=Parameter,value=MIT.result,depth,duration,intensity)
+
+
+    # boxplot of the three results
+  
+      # create the folder location to save the .PNG file1" (dynamic)
+      # save_PNG_folder<-paste0('Frequency Analysis_2/data_out',"/",site_prefix)
+      
+      # create chart title - FIXED ON MIT 60
+      chart_title<-paste0(site_prefix," ", "Rain Event Results MIT 60")
+    
+      # create chart PNG outifle name (dynamic)
+      # outfile_name<-paste0(site_prefix,"_", "MIT_", MIT_value[i],"_Boxplot.png")
+     
+      # this bolxplot requires the 'scales'package ('log10')
+     
+      p8<-ggplot(data=gathered_ddi_results, aes(x=Parameter,y=MIT.result,fill=Parameter)) +
+        geom_boxplot() +
+        stat_boxplot(geom='errorbar',width=0.3) +  # adds horiz. lines to whiskers
+        theme(axis.title.y = element_text(size = 12)) +
+        #rotate x-axis test 90 degrees
+        theme(axis.text.x = element_text(angle = 45,vjust = 0.5,size = 8)) +
+        ylab("(mm)  (hours)  (mm/hr)") +
+        xlab("") +
+        #expand_limits(y=c(100,600)) +
+        scale_y_continuous(trans = log10_trans()) +
+        guides(fill=FALSE) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        theme(plot.title = element_text(size = 12)) +
+        ggtitle(chart_title)
+      #   outfile<-file.path(save_PNG_folder,outfile_name)
+      # ggsave(outfile,p1,width= 8, height=4.944, dpi=600,units=c("in"))
+       print(p8)
+    
+
+
+```
+
+
 \newpage
 
 ## Rainfall Event Statistics - Minimum Inter-Event Time 360 Minutes
@@ -1256,7 +1318,7 @@ rm(list=ls())
 ```
 
 
-## Rainfall Maximum Gap Times - Minimum Inter-Event Time 60 Minutes
+## Rainfall Maximum Gap Times - Based on MIT (Minimum Inter-Event Time) of 60 Minutes
 
 ```{r gaptime-barchart-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
@@ -1300,9 +1362,9 @@ rm(list=ls())
       print(p7)
       
 ```
+\newpage
 
-
-## Rainfall Gap Time Statistics - MIT 60 Minutes - Part 1
+## Rainfall Gap Time Statistics - MIT 60 Minutes (* Note: not all years may be printed to save space *)
 
 
 ```{r gap-times-table-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1335,7 +1397,7 @@ rm(list=ls())
         # determine the maximum number of columns
         last_col <- ncol(table_data_4)
         
-        # select column 1 to 10
+        # output table if at least 10 columns
       
         if (last_col >= 10) {
       
@@ -1349,57 +1411,25 @@ rm(list=ls())
         # fit_to_width(max_width = 8)
         autofit()
         
-        }      else
-          {
+      }
+      
   
-            print ("Less than 10 years of Data - Table not outputted")
-          }  
+      # output a smaller table if less than 10 columns
       
+        if (last_col < 10) {
       
+        t1 <- table_data_4[,1:last_col]
       
-      ############## If block #2 ########################
-       
-      # if (ncol(table_data_3) > 20 & ncol(table_data_3) <= 30) {
-      # 
-      #   last_col <- ncol(table_data_3)
-      #   
-      #   # select column 1 to 10
-      # 
-      #   t1 <- table_data_3[,1:10]
-      # 
-      #   t1 %>%  flextable() %>%
-      #   # set_caption(caption = table_caption) %>%
-      #   # fontsize(size = 10, part = "all") %>%
-      #   colformat_double(digits = 2) %>%
-      #   theme_vanilla() %>%
-      #   # fit_to_width(max_width = 8)
-      #   autofit()
-      #   
-      #   # select column 11 to 19
-      # 
-      #   t2 <- table_data_3[,c(1,11:19)]
-      # 
-      #   t2 %>%  flextable() %>%
-      #   # set_caption(caption = table_caption) %>%
-      #   # fontsize(size = 10, part = "all") %>%
-      #   colformat_double(digits = 2) %>%
-      #   theme_vanilla() %>%
-      #   # fit_to_width(max_width = 8)
-      #   autofit()
-      # 
-      #   # select column 20 to last_col
-      # 
-      #   t3 <- table_data_3[,c(1,20:last_col)]
-      # 
-      #   t3 %>%  flextable() %>%
-      #   # set_caption(caption = table_caption) %>%
-      #   # fontsize(size = 10, part = "all") %>%
-      #   colformat_double(digits = 2) %>%
-      #   theme_vanilla() %>%
-      #   # fit_to_width(max_width = 8)
-      #   autofit()
-      #   
-      # }
+        t1 %>%  flextable() %>%
+        # set_caption(caption = table_caption) %>%
+        # fontsize(size = 10, part = "all") %>%
+        colformat_double(digits = 2) %>%
+        theme_vanilla() %>%
+        # fit_to_width(max_width = 8)
+        autofit()
+        
+      }  
+    
 
 
 ```
