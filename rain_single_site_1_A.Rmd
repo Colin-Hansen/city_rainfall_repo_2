@@ -87,35 +87,36 @@ library(officer) #see page 30 'flextable' package
 
 panderOptions('knitr.auto.asis', FALSE)
 
-# remove all the files saved from the previous session
-
-rm(list=ls())
-
 
 ```
 
 
 
 
-```{r compile-raw-data, eval = FALSE, include=FALSE}
+```{r compile-raw-data, eval = TRUE, include=FALSE}
+
+# remove all the files saved from the previous session
+rm(list=ls())
+
 
   # read the site names
-  site_names<-read.table('Site Names/Site_Names_and_Ground_Elevations.csv',sep=",",header=TRUE,stringsAsFactors = FALSE)
+  site_names_station_names<-read.table('Site Names/Site_Names_and_Ground_Elevations.csv',sep=",",header=TRUE,stringsAsFactors = FALSE)
  
   # extract a vector of the site names
-  site_names<-as.character(site_names$Site.Name)
+  site_names<-as.character(site_names_station_names$Site.Name)
   
-  # shorten to first two 2 site names - testing / optional
-  # site_names <- site_names[1:2]
-  site_names <- site_names[1]
+   # extract a vector of the STATION names
+  station_names<-as.character(site_names_station_names$Station)
   
-  single_site_name <- site_names[1]
   
-
+  # Specify the site for compiling the .csv data
+  single_site_name <- site_names[10]
+  
+  
   # get the names of the raw data subfolders
   subfolder_names<-dir('data_in',full.names = TRUE)
   
-  subfolder_names<-subfolder_names[1:5] # TESTING ONLY
+  # subfolder_names<-subfolder_names[1:4] # TESTING ONLY
  
   
   # enter loop to create a list of the subfolder names (e.g. 1988, 1989, etc.)
@@ -143,7 +144,7 @@ rm(list=ls())
   
   # use 'str_detect' to identify all the files that match 'site_name' (e.g. S01)
   
-  site_name_detect <- str_detect(vector_all_filenames_unlist,site_names)
+  site_name_detect <- str_detect(vector_all_filenames_unlist,single_site_name)
  
   # subset the files that match 'site_name'
   
@@ -212,7 +213,7 @@ rm(list=ls())
       
   rainfall_data_df <- bind_rows(rainfall_data_list)      
      
-  view(rainfall_data_df)
+  # view(rainfall_data_df)
   
   
    # create a directory to save the .CSV files
@@ -229,10 +230,8 @@ rm(list=ls())
   write_csv(rainfall_data_df,CSV_outfile)   
   
   rm(rainfall_data_df)  
-  
-#  \newpage
 
-  
+
 
 ```
 
@@ -240,10 +239,9 @@ rm(list=ls())
 
 \blandscape
 
-## Rain Gauge: S01 Spy Hill
+## Rain Gauge: S10 Forest Heights
 
-## Statistics for the 5-minute Raw Rainfall Data  
-
+## Statistics for the 5-minute Raw Rainfall Data
 
 ```{r stats-part-1, eval= TRUE, echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis'}
 
@@ -292,11 +290,23 @@ rm(list=ls())
       # create (if necessary) directory - ** first part
       if(dir.exists(stats_folder_4) == FALSE) dir.create(stats_folder_4)
       
+     
+      # delete any previous .CSV files in 'stats_folder_2/3/4'
+      files_to_remove<-dir('data_out/Stats_Summary_2',full.names = TRUE)
+      file.remove(files_to_remove)
+      
+      files_to_remove<-dir('data_out/Stats_Summary_3',full.names = TRUE)
+      file.remove(files_to_remove)
+      
+      files_to_remove<-dir('data_out/Stats_Summary_4',full.names = TRUE)
+      file.remove(files_to_remove)
+      
+      
       
       # read the rainfall data for one site using 'read_csv'
       rain_5_min<-read_csv(CSV_infile,col_names = TRUE)
       
-      
+      view(head(rain_5_min))
       
       # get basic stats on the 5 minute rainfall data
       
@@ -583,8 +593,11 @@ rm(list=ls())
    
 ```
 
+\newpage
 
 ## Chart: May-Sept. Rainfall by Year - Descending
+
+## Note: dashed line is the Calgary Intl. 'A' Normal Rainfall for May to Sept. (1981-2010)
 
 ```{r charts-part-2, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
@@ -612,6 +625,8 @@ rm(list=ls())
     geom_bar(stat = "identity",position=position_dodge()) +
     theme(axis.title.x = element_text(size = 12),axis.text.x = element_text(angle=45,hjust=1)) +
     theme(axis.title.y = element_text(size = 12)) +
+    ## add YYC May - Sept normal rainfall
+    geom_hline(aes(yintercept=304.2),color="red",linetype="dashed") +
     ylab("Rainfall (mm)") +
     scale_y_continuous(limits = c(0,500)) +
     xlab("") +
@@ -715,9 +730,7 @@ rm(list=ls())
 
 ```
 
-
 ## Chart: City of Calgary Rain Gauge versus YYC International Airport Rain Gauge
-
 
 ```{r charts-part-5,eval= TRUE,echo = FALSE,message=FALSE, warning=FALSE}
 
@@ -772,7 +785,7 @@ rm(list=ls())
 \newpage
 
 
-## Rainfall Event Statistics - IET 60 Minutes
+## Rainfall Event Statistics - IETD 60 Minutes
 
 
 ```{r event-statistics-part-1A, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1026,7 +1039,7 @@ rm(list=ls())
 
 
 
-## Boxplot of Rainfall Event Depth, Duration (IET 60 Minutes)
+## Boxplot of Rainfall Event Depth, Duration (IETD 60 Minutes)
 
 
 ```{r event-boxplot-part-1, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1047,7 +1060,7 @@ rm(list=ls())
       # save_PNG_folder<-paste0('Frequency Analysis_2/data_out',"/",site_prefix)
       
       # create chart title - FIXED ON MIT 60
-      chart_title<-paste0(site_prefix," ", "Rain Event Results MIT 60")
+      chart_title<-paste0(site_prefix," ", "Rain Event Results - IETD 60")
     
       # create chart PNG outifle name (dynamic)
       # outfile_name<-paste0(site_prefix,"_", "MIT_", MIT_value[i],"_Boxplot.png")
@@ -1079,7 +1092,7 @@ rm(list=ls())
 
 \newpage
 
-## Rainfall Event Statistics (IET 360 Minutes)
+## Rainfall Event Statistics (IETD 360 Minutes)
 
 
 ```{r event-statistics-part-1B, eval=TRUE, echo = FALSE,message=FALSE, warning=FALSE}
@@ -1329,7 +1342,7 @@ rm(list=ls())
 ```
 
 
-## Rainfall Maximum Gap Times - Inter-Event Time (IET) 60 Minutes
+## Rainfall Maximum Gap Times - Inter-Event Time (IETD) 60 Minutes
 
 ```{r gaptime-barchart-part-1, eval= TRUE,echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis',fig.width=10,fig.asp=0.618}
 
@@ -1375,7 +1388,7 @@ rm(list=ls())
 ```
 \newpage
 
-## Rainfall Gap Time Statistics - IET 60 Minutes
+## Rainfall Gap Time Statistics - IETD 60 Minutes
 
 ## Note: output maximum of 10 years of data - for brevity
 
