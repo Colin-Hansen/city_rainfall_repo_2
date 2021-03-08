@@ -110,13 +110,15 @@ rm(list=ls())
   
   
   # Specify the site for compiling the .csv data
-  single_site_name <- site_names[10]
+  single_site_name <- site_names[33]
   
   
   # get the names of the raw data subfolders
   subfolder_names<-dir('data_in',full.names = TRUE)
   
-  # subfolder_names<-subfolder_names[1:4] # TESTING ONLY
+  # subfolder_names<-subfolder_names[c(1:25,31:32)] # TESTING ONLY
+  
+  subfolder_names<-subfolder_names[24:32] # TESTING ONLY
  
   
   # enter loop to create a list of the subfolder names (e.g. 1988, 1989, etc.)
@@ -239,18 +241,14 @@ rm(list=ls())
 
 \blandscape
 
-## Rain Gauge: S10 Forest Heights
+## Rain Gauge: 34 Signal Hill
+
+# NOTE: Years 2009 - 2010 were removed from the analysis (error on processing)
 
 ## Statistics for the 5-minute Raw Rainfall Data
 
+
 ```{r stats-part-1, eval= TRUE, echo = FALSE,include = TRUE, message=FALSE, warning=FALSE, results = 'asis'}
-
-  # unused chunk option for figures
-
-    # out.width='.89\\linewidth'
-
-# keep the following line; but not sure if it works
-# cat("\\newpage")
 
 
   # read a single .CSV file; generate basic summary stastics
