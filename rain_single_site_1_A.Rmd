@@ -110,16 +110,15 @@ rm(list=ls())
   
   
   # Specify the site for compiling the .csv data
-  single_site_name <- site_names[33]
+  single_site_name <- site_names[9]
   
   
   # get the names of the raw data subfolders
   subfolder_names<-dir('data_in',full.names = TRUE)
   
-  # subfolder_names<-subfolder_names[c(1:25,31:32)] # TESTING ONLY
+  subfolder_names<-subfolder_names[c(29:33)] # TESTING ONLY
   
-  subfolder_names<-subfolder_names[24:32] # TESTING ONLY
- 
+  
   
   # enter loop to create a list of the subfolder names (e.g. 1988, 1989, etc.)
   
@@ -241,9 +240,7 @@ rm(list=ls())
 
 \blandscape
 
-## Rain Gauge: 34 Signal Hill
-
-# NOTE: Years 2009 - 2010 were removed from the analysis (error on processing)
+## Rain Gauge: 09 Temple
 
 ## Statistics for the 5-minute Raw Rainfall Data
 
